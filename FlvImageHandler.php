@@ -53,7 +53,7 @@ class FlvPlayCode extends MediaTransformOutput
         if (count(func_get_args()) == 2)
             throw new MWException(__METHOD__ .' called in the old style');
 
-        global $wgFlashPlayer, $wgScriptPath;
+        global $wgFlashPlayer, $wgScriptPath, $wgServerName;
 
         // Default address of Flash video playing applet
         if (empty($wgFlashPlayer)) $wgFlashPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
@@ -73,7 +73,7 @@ class FlvPlayCode extends MediaTransformOutput
             $postfix = '</div>';
         }
 
-        $strURL = $this->file->getUrl();
+        $strURL = urlencode($this->file->getFullUrl());
 
         // Generate a "thumbnail" to display in the video window before the user
         // clicks the play button.
@@ -84,7 +84,7 @@ class FlvPlayCode extends MediaTransformOutput
         ));
         if ($thumb->isError())
             $prefix .= $thumb->toHtml();
-        $strThumbURL = $thumb->getUrl();
+        $strThumbURL = urlencode('http://' . $wgServerName . $thumb->getUrl());
 
         $strConfig = 'config={"playlist":[ ';
         if ($strThumbURL)
@@ -215,6 +215,7 @@ class FlvImageHandler extends ImageHandler
             wfDebugLog('thumbnail',
                 sprintf('thumbnail failed on %s: error %d "%s" from "%s"',
                     wfHostname(), $retval, $err, $cmd));
+
             if (preg_match('#([^\n]*)$#is', $err, $m))
             {
                 global $wgLang;

@@ -41,7 +41,7 @@ if (!$wgFLVConverters['ffmpeg']) $wgFLVConverters['ffmpeg'] = '$path/ffmpeg -vco
 if (!$wgFLVProbes) $wgFLVProbes = array();
 if (!$wgFLVProbes['ffmpeg']) $wgFLVProbes['ffmpeg'] = array(
     'cmd' => '$path/ffmpeg -i $input',
-    'regex' => '/Stream.*Video.* (\d+)x(\d+),/'  // [1] == width, [2] == height
+    'regex' => '/Stream.*Video.* (\d+)x(\d+)/'  // [1] == width, [2] == height
 );
 
 // Pick one of the above as the converter to use
