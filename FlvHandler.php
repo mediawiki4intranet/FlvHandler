@@ -34,18 +34,12 @@ $wgMediaHandlers['video/x-flv'] = 'FlvImageHandler';
 
 // Commands to extract still frames out of the FLV files
 if (!$wgFLVConverters) $wgFLVConverters = array();
-// Useful hack: 'ffmpeg' => '$path/ffmpeg -i $input -ss 0 -vframes 1 -f image2 $output.png && convert $output.png -resize $widthx$height $output && rm $output.png'
-if (!$wgFLVConverters['ffmpeg']) $wgFLVConverters['ffmpeg'] = '$path/ffmpeg -vcodec png -i $input -ss 0 -vframes 1 -s $widthx$height -f image2 $output';
-if (!$wgFLVConverters['ffmpeg4i']) $wgFLVConverters['ffmpeg4i'] = $dir.'ffmpeg4i $input $width $height $output 2';
+if (!$wgFLVConverters['ffmpeg']) $wgFLVConverters['ffmpeg'] = $dir.'ffmpeg4i $input $width $height $output $nx $ny';
 
 // Probe command (to get video width and height.)  'regex' is run over the
 // command's output to get the dimensions.
 if (!$wgFLVProbes) $wgFLVProbes = array();
 if (!$wgFLVProbes['ffmpeg']) $wgFLVProbes['ffmpeg'] = array(
-    'cmd' => '$path/ffmpeg -i $input',
-    'regex' => '/Stream.*Video.* (\d+)x(\d+)/'  // [1] == width, [2] == height
-);
-if (!$wgFLVProbes['ffmpeg4i']) $wgFLVProbes['ffmpeg4i'] = array(
     'cmd' => '$path/ffmpeg -i $input',
     'regex' => '/Stream.*Video.* (\d+)x(\d+)/'  // [1] == width, [2] == height
 );

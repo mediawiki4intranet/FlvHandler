@@ -13,6 +13,20 @@
  * @file
  * @ingroup Media
  */
+class FlvThumbnailImage extends ThumbnailImage
+{
+    function FlvThumbnailImage($file, $url, $width, $height, $path = false, $page = false)
+    {
+        $this->ThumbnailImage($file, $url, $width, $height, $path, $page);
+    }
+    function toHtml($options = array())
+    {
+        global $wgScriptPath;
+        $html = parent::toHtml($options);
+        $html = str_replace('</a>', '<br><div style="background-image:url('.$wgScriptPath.'/extensions/FlvHandler/film6x10.gif); background-repeat:repeat-x; width:'.$this->width.'px; height: 10px"></div></a>', $html);
+        return $html;
+    }
+}
 
 /**
  * @ingroup Media
@@ -29,16 +43,6 @@ class FlvPlayCode extends MediaTransformOutput
         $this->url = $url;
         $this->width = 0+$width;
         $this->height = 0+$height;
-        if ($this->width < $wgMinFLVSize[0])
-        {
-            $this->height = $this->height * $wgMinFLVSize[0] / $this->width;
-            $this->width = $wgMinFLVSize[0];
-        }
-        if ($this->height < $wgMinFLVSize[1])
-        {
-            $this->width = $this->width * $wgMinFLVSize[1] / $this->height;
-            $this->height = $wgMinFLVSize[1];
-        }
         $this->width = round($this->width);
         $this->height = round($this->height);
         $this->path = $path;
@@ -53,7 +57,7 @@ class FlvPlayCode extends MediaTransformOutput
         if (count(func_get_args()) == 2)
             throw new MWException(__METHOD__ .' called in the old style');
 
-        global $wgFlashPlayer, $wgScriptPath, $wgServerName;
+        global $wgFlashPlayer, $wgScriptPath, $wgServerName, $wgMinFLVSize;
 
         // Default address of Flash video playing applet
         if (empty($wgFlashPlayer)) $wgFlashPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
@@ -75,8 +79,8 @@ class FlvPlayCode extends MediaTransformOutput
 
         $strURL = urlencode($this->file->getFullUrl());
 
-        // Generate a "thumbnail" to display in the video window before the user
-        // clicks the play button.
+        /* Generate a thumbnail to display in the video window before the user
+         * clicks the play button. */
         $thumb = $this->file->transform(array(
             'width' => $this->width,
             'height' => $this->height,
@@ -167,7 +171,7 @@ class FlvImageHandler extends ImageHandler
 
     function doTransform($image, $dstPath, $dstUrl, $params, $flags = 0)
     {
-        global $wgFLVConverters, $wgFLVConverter, $wgFLVConverterPath;
+        global $wgFLVConverters, $wgFLVConverter, $wgFLVConverterPath, $wgMinFLVSize;
 
         if (!$this->normaliseParams($image, $params))
             return new TransformParameterError($params);
@@ -179,8 +183,10 @@ class FlvImageHandler extends ImageHandler
         $srcPath = $image->getPath();
 
         $class = 'FlvPlayCode';
-        if ($params['makeflvthumbnail']) /* Used only by FlvPlayCode::toHtml() */
-            $class = 'ThumbnailImage';
+        /* makeflvthumbnail=true is used by FlvPlayCode::toHtml() */
+        /* imagegallery=true is used by ImageGallery::toHtml() */
+        if ($params['makeflvthumbnail'] || $params['imagegallery'])
+            $class = 'FlvThumbnailImage';
 
         if ($flags & self::TRANSFORM_LATER)
             return new $class($image, $dstUrl, $clientWidth, $clientHeight, $dstPath);
@@ -192,15 +198,19 @@ class FlvImageHandler extends ImageHandler
         $err = false;
         if (isset($wgFLVConverters[$wgFLVConverter]))
         {
-            /* Invoke ffmpeg (or another converter) */
+            /* Invoke ./ffmpeg4i (or another converter) */
+            $n = $clientWidth >= $wgMinFLVSize[0] && $clientHeight >= $wgMinFLVSize[1] ? 2 : 1;
             $cmd = str_replace(
-                array('$path/', '$width', '$height', '$input', '$output'),
-                array($wgFLVConverterPath ? wfEscapeShellArg("$wgFLVConverterPath/") : "",
-                       intval($physicalWidth),
-                       intval($physicalHeight),
-                       wfEscapeShellArg($srcPath),
-                       wfEscapeShellArg($dstPath)),
-                $wgFLVConverters[$wgFLVConverter]) . " 2>&1";
+                array('$path/', '$width', '$height', '$input', '$output', '$nx', '$ny'),
+                array(
+                    $wgFLVConverterPath ? wfEscapeShellArg("$wgFLVConverterPath/") : "",
+                    intval($physicalWidth),
+                    intval($physicalHeight),
+                    wfEscapeShellArg($srcPath),
+                    wfEscapeShellArg($dstPath),
+                    $n,
+                    $n
+                ), $wgFLVConverters[$wgFLVConverter]) . " 2>&1";
             wfProfileIn('rsvg');
             wfDebug(__METHOD__.": $cmd\n");
             $err = wfShellExec($cmd, $retval);

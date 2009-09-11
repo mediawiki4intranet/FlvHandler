@@ -1,0 +1,13 @@
+Index: ImageGallery.php
+===================================================================
+--- ImageGallery.php	(revision 56106)
++++ ImageGallery.php	(working copy)
+@@ -232,7 +232,7 @@
+ 		if( $this->mCaption )
+ 			$s .= "\n\t<caption>{$this->mCaption}</caption>";
+ 
+-		$params = array( 'width' => $this->mWidths, 'height' => $this->mHeights );
++		$params = array( 'width' => $this->mWidths, 'height' => $this->mHeights, 'imagegallery' => true );
+ 		$i = 0;
+ 		foreach ( $this->mImages as $pair ) {
+ 			$nt = $pair[0];
