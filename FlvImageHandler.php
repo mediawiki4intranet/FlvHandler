@@ -57,11 +57,11 @@ class FlvPlayCode extends MediaTransformOutput
         if (count(func_get_args()) == 2)
             throw new MWException(__METHOD__ .' called in the old style');
 
-        global $wgFlashPlayer, $wgScriptPath, $wgServerName, $wgMinFLVSize;
+        global $wgFlowPlayer, $wgScriptPath, $wgServerName, $wgMinFLVSize;
 
         // Default address of Flash video playing applet
-        if (empty($wgFlashPlayer)) $wgFlashPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
-        if (!preg_match('#^([a-z]+:/)?/#is', $wgFlashPlayer)) $wgFlashPlayer = $wgScriptPath . '/'. $wgFlashPlayer;
+        if (empty($wgFlowPlayer)) $wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
+        if (!preg_match('#^([a-z]+:/)?/#is', $wgFlowPlayer)) $wgFlowPlayer = $wgScriptPath . '/'. $wgFlowPlayer;
 
         $prefix = $postfix = '';
         if (!empty($options['align']))
@@ -100,12 +100,12 @@ class FlvPlayCode extends MediaTransformOutput
 
         return <<<EOF
 $prefix<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="$w" height="$h">
-    <param name="movie" value="$wgFlashPlayer" />
+    <param name="movie" value="$wgFlowPlayer" />
     <param name="allowfullscreen" value="true" />
     <param name="flashvars" value='$strConfig' />
     <embed type="application/x-shockwave-flash" width="$w" height="$h"
         allowfullscreen="true"
-        src="$wgFlashPlayer"
+        src="$wgFlowPlayer"
         flashvars='$strConfig' />
 </object>$postfix
 EOF;
