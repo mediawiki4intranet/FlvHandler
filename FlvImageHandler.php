@@ -66,7 +66,8 @@ class FlvPlayCode extends MediaTransformOutput
             substr($wgFlowPlayer, 0, strlen($wgScriptPath) != $wgScriptPath))
             $wgFlowPlayer = $wgScriptPath . '/'. $wgFlowPlayer;
 
-        $prefix = $postfix = '';
+        $prefix = '<div>';
+        $postfix = '</div>';
         if (!empty($options['align']))
         {
             switch ($options['align'])
@@ -77,7 +78,6 @@ class FlvPlayCode extends MediaTransformOutput
                 default: $className = 'floatnone'; break;
             }
             $prefix = '<div class="' . $className . '">';
-            $postfix = '</div>';
         }
 
         $strURL = urlencode($this->file->getFullUrl());
