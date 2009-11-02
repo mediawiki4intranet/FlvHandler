@@ -60,8 +60,11 @@ class FlvPlayCode extends MediaTransformOutput
         global $wgFlowPlayer, $wgScriptPath, $wgServerName, $wgMinFLVSize;
 
         // Default address of Flash video playing applet
-        if (empty($wgFlowPlayer)) $wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
-        if (!preg_match('#^([a-z]+:/)?/#is', $wgFlowPlayer)) $wgFlowPlayer = $wgScriptPath . '/'. $wgFlowPlayer;
+        if (empty($wgFlowPlayer))
+            $wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
+        if (!preg_match('#^([a-z]+:/)?/#is', $wgFlowPlayer) &&
+            substr($wgFlowPlayer, 0, strlen($wgScriptPath) != $wgScriptPath))
+            $wgFlowPlayer = $wgScriptPath . '/'. $wgFlowPlayer;
 
         $prefix = $postfix = '';
         if (!empty($options['align']))
