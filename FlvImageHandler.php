@@ -188,7 +188,8 @@ class FlvImageHandler extends ImageHandler
         $class = 'FlvPlayCode';
         /* makeflvthumbnail=true is used by FlvPlayCode::toHtml() */
         /* imagegallery=true is used by ImageGallery::toHtml() */
-        if ($params['makeflvthumbnail'] || $params['imagegallery'])
+        /* imagehistory=true is used by ImagePage::imageHistoryLine() */
+        if ($params['makeflvthumbnail'] || $params['imagegallery'] || $params['imagehistory'])
             $class = 'FlvThumbnailImage';
 
         if ($flags & self::TRANSFORM_LATER)
