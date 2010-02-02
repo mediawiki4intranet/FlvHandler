@@ -63,7 +63,7 @@ class FlvPlayCode extends MediaTransformOutput
         if (empty($wgFlowPlayer))
             $wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.0.3.swf';
         if (!preg_match('#^([a-z]+:/)?/#is', $wgFlowPlayer) &&
-            substr($wgFlowPlayer, 0, strlen($wgScriptPath) != $wgScriptPath))
+            (!strlen($wgScriptPath) || substr($wgFlowPlayer, 0, strlen($wgScriptPath)) != $wgScriptPath))
             $wgFlowPlayer = $wgScriptPath . '/'. $wgFlowPlayer;
 
         $prefix = '<div>';
