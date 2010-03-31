@@ -57,7 +57,7 @@ class FlvPlayCode extends MediaTransformOutput
         if (count(func_get_args()) == 2)
             throw new MWException(__METHOD__ .' called in the old style');
 
-        global $wgFlowPlayer, $wgScriptPath, $wgServerName, $wgMinFLVSize;
+        global $wgFlowPlayer, $wgScriptPath, $wgServer, $wgMinFLVSize;
 
         // Default address of Flash video playing applet
         if (empty($wgFlowPlayer))
@@ -91,7 +91,10 @@ class FlvPlayCode extends MediaTransformOutput
         ));
         if ($thumb->isError())
             $prefix .= $thumb->toHtml();
-        $strThumbURL = urlencode('http://' . $wgServerName . $thumb->getUrl());
+        $strThumbURL = $thumb->getUrl();
+        if (substr($strThumbURL, 0, strlen($wgServer)) != $wgServer)
+            $strThumbURL = $wgServer . $strThumbURL;
+        $strThumbURL = urlencode($strThumbURL);
 
         $strConfig = 'config={"playlist":[ ';
         if ($strThumbURL)
