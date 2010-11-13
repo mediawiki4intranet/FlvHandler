@@ -1,7 +1,7 @@
 <?php
 
 /**#@+
- * An image handler which adds support for Flash video (.flv) files.
+ * An image handler which adds support for Flash video (.flv) and MP4 H.264/AAC files.
  *
  * @author Adam Nielsen <a.nielsen@shikadi.net>
  * @author Vitaliy Filippov <vitalif@mail.ru>

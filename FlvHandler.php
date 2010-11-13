@@ -4,7 +4,7 @@ if (!defined('MEDIAWIKI'))
     die();
 
 /**#@+
- * An image handler which adds support for Flash video (.flv) files.
+ * An image handler which adds support for Flash video (.flv) and MP4 H.264/AAC files.
  *
  * @addtogroup Extensions
  *
@@ -31,6 +31,7 @@ $dir = dirname( __FILE__ ) . '/';
 $wgExtensionMessagesFiles['FlvHandler'] = $dir . 'FlvHandler.i18n.php';
 $wgAutoloadClasses['FlvImageHandler'] = $dir . 'FlvImageHandler.php';
 $wgMediaHandlers['video/x-flv'] = 'FlvImageHandler';
+$wgMediaHandlers['video/mp4'] = 'FlvImageHandler';
 
 // Commands to extract still frames out of the FLV files
 if (!$wgFLVConverters) $wgFLVConverters = array();
