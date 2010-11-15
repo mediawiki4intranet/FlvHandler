@@ -22,7 +22,7 @@ $wgExtensionCredits['parserhook'][] = array(
     'version'      => 'r2',
     'author'       => 'Adam Nielsen',
     'url'          => 'http://www.mediawiki.org/wiki/Extension:FlvHandler',
-    'description'  => 'Allow Flash Video (.flv) files to be used in standard image tags (e.g. <nowiki>[[Image:Movie.flv]]</nowiki>)',
+    'description'  => 'Allow Flash Video (.flv) and MP4 H.264/AAC files to be used in standard image tags (e.g. <nowiki>[[Image:Movie.flv]]</nowiki>)',
     'descriptionmsg' => 'flvhandler_desc'
 );
 
@@ -32,10 +32,6 @@ $wgExtensionMessagesFiles['FlvHandler'] = $dir . 'FlvHandler.i18n.php';
 $wgAutoloadClasses['FlvImageHandler'] = $dir . 'FlvImageHandler.php';
 $wgMediaHandlers['video/x-flv'] = 'FlvImageHandler';
 $wgMediaHandlers['video/mp4'] = 'FlvImageHandler';
-
-// Commands to extract still frames out of the FLV files
-if (!$wgFLVConverters) $wgFLVConverters = array();
-if (!$wgFLVConverters['ffmpeg']) $wgFLVConverters['ffmpeg'] = $dir.'ffmpeg4i $input $width $height $output $nx $ny';
 
 // Probe command (to get video width and height.)  'regex' is run over the
 // command's output to get the dimensions.

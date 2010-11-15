@@ -182,10 +182,8 @@ class FlvImageHandler extends ImageHandler
         if (!$this->normaliseParams($image, $params))
             return new TransformParameterError($params);
 
-        $clientWidth = $params['width'];
-        $clientHeight = $params['height'];
-        $physicalWidth = $params['physicalWidth'];
-        $physicalHeight = $params['physicalHeight'];
+        $width = $params['physicalWidth'];
+        $height = $params['physicalHeight'];
         $srcPath = $image->getPath();
 
         $class = 'FlvPlayCode';
@@ -196,63 +194,113 @@ class FlvImageHandler extends ImageHandler
             $class = 'FlvThumbnailImage';
 
         if ($flags & self::TRANSFORM_LATER)
-            return new $class($image, $dstUrl, $clientWidth, $clientHeight, $dstPath);
+            return new $class($image, $dstUrl, $width, $height, $dstPath);
 
         if (!wfMkdirParents(dirname($dstPath)))
-            return new MediaTransformError('thumbnail_error', $clientWidth, $clientHeight,
+            return new MediaTransformError('thumbnail_error', $width, $height,
                 wfMsg('thumbnail_dest_directory'));
 
-        $err = false;
+        wfLoadExtensionMessages('FlvHandler');
+
+        $err = '';
         if (isset($wgFLVConverters[$wgFLVConverter]))
+            $err = $this->makeFFmpegThumbnail($srcPath, $dstPath, $width, $height);
+
+        if ($err != '')
+            return new MediaTransformError('thumbnail_error', $width, $height, $err);
+        else
+            return new $class($image, $dstUrl, $width, $height, $dstPath);
+    }
+
+    function makeFFmpegThumbnail($srcPath, $dstPath, $width, $height)
+    {
+        global $wgFLVConverterPath, $wgMinFLVSize;
+        wfProfileIn(__METHOD__);
+        /* Frame count to be extracted onto thumbnail image:
+           4 for big thumbnails, 1 for small thumbnails */
+        $n = $width >= $wgMinFLVSize[0] && $height >= $wgMinFLVSize[1] ? 2 : 1;
+        $ny = $nx = $n;
+        $width = intval($width);
+        $height = intval($height);
+        $input = wfEscapeShellArg($srcPath);
+        $ffmpeg = $wgFLVConverterPath ? wfEscapeShellArg("$wgFLVConverterPath/")."ffmpeg" : "ffmpeg";
+        /* Find video duration */
+        $probe = wfShellExec("$ffmpeg -i $input 2>&1");
+        if (!preg_match('/Duration: (\d+):(\d+):(\d+)\.(\d+)/', $probe, $m))
         {
-            /* Invoke ./ffmpeg4i (or another converter) */
-            $n = $clientWidth >= $wgMinFLVSize[0] && $clientHeight >= $wgMinFLVSize[1] ? 2 : 1;
-            $cmd = str_replace(
-                array('$path/', '$width', '$height', '$input', '$output', '$nx', '$ny'),
-                array(
-                    $wgFLVConverterPath ? wfEscapeShellArg("$wgFLVConverterPath/") : "",
-                    intval($physicalWidth),
-                    intval($physicalHeight),
-                    wfEscapeShellArg($srcPath),
-                    wfEscapeShellArg($dstPath),
-                    $n,
-                    $n
-                ), $wgFLVConverters[$wgFLVConverter]) . " 2>&1";
-            wfProfileIn('rsvg');
-            wfDebug(__METHOD__.": $cmd\n");
-            $err = wfShellExec($cmd, $retval);
-            wfProfileOut('rsvg');
+            wfDebug("No Duration: ... found in:\n$probe\n");
+            return wfMsgExt('flv-error-full-info', 'parseinline',
+                $wgLang->formatNum($width),
+                $wgLang->formatNum($height)) . $err;
         }
-
-        $removed = $this->removeBadFile($dstPath, $retval);
-        if ($retval != 0 || $removed)
+        $duration = $m[1]*3600 + $m[2]*60 + $m[3] + $m[4]/100;
+        if ($ny < 2 && $nx < 2)
         {
-            /* Try to format error slightly */
-            $err = trim($err);
-            wfDebugLog('thumbnail',
-                sprintf('thumbnail failed on %s: error %d "%s" from "%s"',
-                    wfHostname(), $retval, $err, $cmd));
-
-            if (preg_match('#([^\n]*)$#is', $err, $m))
+            /* Extract one frame */
+            $s = sprintf("%.2f", $duration*0.1);
+            $cmd = "$ffmpeg -ss '$s' -i $input -vframes 1 -f image2 -y ".wfEscapeShellArg($dstPath)." 2>&1";
+            $err = wfShellExec($cmd, $retval);
+            if ($retval != 0)
             {
-                global $wgLang;
-                wfLoadExtensionMessages('FlvHandler');
-                $err =
-                    $m[1] .
-                    wfMsgExt('flv-error-full-info', 'parseinline',
-                        $wgLang->formatNum(intval($physicalWidth)),
-                        $wgLang->formatNum(intval($physicalHeight))) .
-                    $err;
+                wfDebug("$cmd failed:\n$err\n");
+                return wfMsgExt('flv-error-full-info', 'parseinline',
+                    $wgLang->formatNum($width),
+                    $wgLang->formatNum($height)) . $err;
             }
-            return new MediaTransformError('thumbnail_error', $clientWidth, $clientHeight, $err);
+            if ($gd = imagecreatefromjpeg($dstPath))
+            {
+                /* Resample the frame */
+                $gd1 = imagecreatetruecolor($width, $height);
+                imagecopyresampled($gd1, $gd, 0, 0, 0, 0, $width, $height, imagesx($gd), imagesy($gd));
+                imagejpeg($gd1, $dstPath);
+                imagedestroy($gd);
+                imagedestroy($gd1);
+            }
+            else
+                return "$dstPath not found";
         }
         else
-            return new $class($image, $dstUrl, $clientWidth, $clientHeight, $dstPath);
+        {
+            /* Extract, resample and tile $nx*$ny frames */
+            $tmp = tempnam(wfTempDir(), 'flvtn-').'.jpg';
+            $gd = imagecreatetruecolor($width, $height);
+            for ($i = 0; $i < $ny; $i++)
+            {
+                for ($j = 0; $j < $nx; $j++)
+                {
+                    /* Time moment */
+                    $s = sprintf("%.2f", (0.5+$j+$i*$nx)/($nx*$ny)*$duration);
+                    $cmd = "$ffmpeg -ss '$s' -i $input -vframes 1 -f image2 -y '$tmp' 2>&1";
+                    $err .= wfShellExec($cmd, $retval);
+                    if ($retval != 0)
+                    {
+                        wfDebug("$cmd failed:\n$err\n");
+                        return wfMsgExt('flv-error-full-info', 'parseinline',
+                            $wgLang->formatNum($width),
+                            $wgLang->formatNum($height)) . $err;
+                    }
+                    if ($framegd = imagecreatefromjpeg($tmp))
+                    {
+                        /* Resample each frame using GD, because ffmpeg wants even frame sizes */
+                        imagecopyresampled(
+                            $gd, $framegd, intval($j/$nx*$width), intval($i/$ny*$height), 0, 0,
+                            intval($width/$nx), intval($height/$ny), imagesx($framegd), imagesy($framegd)
+                        );
+                        imagedestroy($framegd);
+                    }
+                    unlink($tmp);
+                }
+            }
+            imagejpeg($gd, $dstPath);
+            imagedestroy($gd);
+        }
+        wfProfileOut(__METHOD__);
+        return '';
     }
 
     function getThumbType($ext, $mime)
     {
-        return array('png', 'image/png');
+        return array('jpg', 'image/jpeg');
     }
 
     function getLongDesc($file)
