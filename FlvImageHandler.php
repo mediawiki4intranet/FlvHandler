@@ -125,11 +125,10 @@ class FlvImageHandler extends ImageHandler
 {
     function isEnabled()
     {
-        global $wgFLVConverters, $wgFLVConverter, $wgFLVProbes;
-        wfDebug('probes is ' . print_r($wgFLVProbes, true) . "\n");
-        if ((!isset($wgFLVConverters[$wgFLVConverter])) || (!isset($wgFLVProbes[$wgFLVConverter])))
+        global $wgFLVProbe;
+        if (!isset($wgFLVProbe))
         {
-            wfDebug("\$wgFLVConverter is invalid, disabling FLV preview frames.\n");
+            wfDebug("\$wgFLVProbe is invalid, disabling FLV preview frames.\n");
             return false;
         }
         else
@@ -138,25 +137,25 @@ class FlvImageHandler extends ImageHandler
 
     function getImageSize($image, $filename)
     {
-        global $wgFLVProbes, $wgFLVConverter, $wgFLVConverterPath;
-        if(isset($wgFLVProbes[$wgFLVConverter]['cmd']))
+        global $wgFLVProbe, $wgFLVConverterPath;
+        wfProfileIn(__METHOD__);
+        if(isset($wgFLVProbe['cmd']))
         {
             $cmd = str_replace(
                 array('$path/', '$input'),
                 array($wgFLVConverterPath ? wfEscapeShellArg("$wgFLVConverterPath/") : "",
                        wfEscapeShellArg($filename)),
-                $wgFLVProbes[$wgFLVConverter]['cmd']) . " 2>&1";
-            wfProfileIn('rsvg');
+                $wgFLVProbe['cmd']) . " 2>&1";
             wfDebug(__METHOD__.": $cmd\n");
             $out = wfShellExec($cmd, $retval);
-            wfProfileOut('rsvg');
 
-            if (preg_match($wgFLVProbes[$wgFLVConverter]['regex'], $out, $matches))
+            if (preg_match($wgFLVProbe['regex'], $out, $matches))
                 return array($matches[1], $matches[2]); // width, height
             else
-                wfDebug(__METHOD__ . ': Unable to extract video dimensions from ' . $wgFLVConverter . ' output: ' . $out . "\n");
+                wfDebug(__METHOD__ . ': Unable to extract video dimensions from probe output: ' . $out . "\n");
         }
         wfDebug(__METHOD__ . ": No probe function defined, .flv previews unavailable.\n");
+        wfProfileOut(__METHOD__);
         return false;
     }
 
@@ -177,7 +176,7 @@ class FlvImageHandler extends ImageHandler
 
     function doTransform($image, $dstPath, $dstUrl, $params, $flags = 0)
     {
-        global $wgFLVConverters, $wgFLVConverter, $wgFLVConverterPath, $wgMinFLVSize;
+        global $wgFLVConverterPath, $wgMinFLVSize;
 
         if (!$this->normaliseParams($image, $params))
             return new TransformParameterError($params);
@@ -202,9 +201,7 @@ class FlvImageHandler extends ImageHandler
 
         wfLoadExtensionMessages('FlvHandler');
 
-        $err = '';
-        if (isset($wgFLVConverters[$wgFLVConverter]))
-            $err = $this->makeFFmpegThumbnail($srcPath, $dstPath, $width, $height);
+        $err = $this->makeFFmpegThumbnail($srcPath, $dstPath, $width, $height);
 
         if ($err != '')
             return new MediaTransformError('thumbnail_error', $width, $height, $err);

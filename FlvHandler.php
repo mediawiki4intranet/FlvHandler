@@ -27,7 +27,7 @@ $wgExtensionCredits['parserhook'][] = array(
 );
 
 // Register the media handler
-$dir = dirname( __FILE__ ) . '/';
+$dir = dirname(__FILE__) . '/';
 $wgExtensionMessagesFiles['FlvHandler'] = $dir . 'FlvHandler.i18n.php';
 $wgAutoloadClasses['FlvImageHandler'] = $dir . 'FlvImageHandler.php';
 $wgMediaHandlers['video/x-flv'] = 'FlvImageHandler';
@@ -35,14 +35,10 @@ $wgMediaHandlers['video/mp4'] = 'FlvImageHandler';
 
 // Probe command (to get video width and height.)  'regex' is run over the
 // command's output to get the dimensions.
-if (!$wgFLVProbes) $wgFLVProbes = array();
-if (!$wgFLVProbes['ffmpeg']) $wgFLVProbes['ffmpeg'] = array(
+if (!$wgFLVProbe) $wgFLVProbe = array(
     'cmd' => '$path/ffmpeg -i $input',
     'regex' => '/Stream.*Video.* (\d+)x(\d+)/'  // [1] == width, [2] == height
 );
-
-// Pick one of the above as the converter to use
-if (empty($wgFLVConverter)) $wgFLVConverter = 'ffmpeg';
 
 // If not in the executable PATH, specify
 if (empty($wgFLVConverterPath)) $wgFLVConverterPath = '';
