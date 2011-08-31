@@ -35,7 +35,7 @@ $wgMediaHandlers['video/mp4'] = 'FlvImageHandler';
 
 // Probe command (to get video width and height.)  'regex' is run over the
 // command's output to get the dimensions.
-if (!$wgFLVProbe) $wgFLVProbe = array(
+if (empty($wgFLVProbe)) $wgFLVProbe = array(
     'cmd' => '$path/ffmpeg -i $input',
     'regex' => '/Stream.*Video.* (\d+)x(\d+)/'  // [1] == width, [2] == height
 );
