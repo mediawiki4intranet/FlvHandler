@@ -237,7 +237,7 @@ class FlvImageHandler extends ImageHandler
         {
             /* Extract one frame */
             $s = sprintf("%.2f", $duration*0.1);
-            $cmd = "$ffmpeg -ss '$s' -i $input -vframes 1 -f image2 -y ".wfEscapeShellArg($dstPath)." 2>&1";
+            $cmd = "$ffmpeg -loglevel debug -ss '$s' -i $input -vframes 1 -f image2 -y ".wfEscapeShellArg($dstPath)." 2>&1";
             $err = wfShellExec($cmd, $retval);
             if ($retval != 0)
             {
@@ -246,7 +246,7 @@ class FlvImageHandler extends ImageHandler
                     $wgLang->formatNum($width),
                     $wgLang->formatNum($height)) . $err;
             }
-            if ($gd = imagecreatefromjpeg($dstPath))
+            if (file_exists($dst) && ($gd = imagecreatefromjpeg($dstPath)))
             {
                 /* Resample the frame */
                 $gd1 = imagecreatetruecolor($width, $height);
@@ -256,7 +256,10 @@ class FlvImageHandler extends ImageHandler
                 imagedestroy($gd1);
             }
             else
+            {
+                wfDebug("FLVHandler: Failed running $cmd, output file does not exist. Output was:\n$err");
                 return "$dstPath not found";
+            }
         }
         else
         {
@@ -269,7 +272,7 @@ class FlvImageHandler extends ImageHandler
                 {
                     /* Time moment */
                     $s = sprintf("%.2f", (0.5+$j+$i*$nx)/($nx*$ny)*$duration);
-                    $cmd = "$ffmpeg -ss '$s' -i $input -vframes 1 -f image2 -y '$tmp' 2>&1";
+                    $cmd = "$ffmpeg -loglevel debug -ss '$s' -i $input -vframes 1 -f image2 -y '$tmp' 2>&1";
                     $err .= wfShellExec($cmd, $retval);
                     if ($retval != 0)
                     {
@@ -278,16 +281,21 @@ class FlvImageHandler extends ImageHandler
                             $wgLang->formatNum($width),
                             $wgLang->formatNum($height)) . $err;
                     }
-                    if ($framegd = imagecreatefromjpeg($tmp))
+                    if (file_exists($tmp))
                     {
-                        /* Resample each frame using GD, because ffmpeg wants even frame sizes */
-                        imagecopyresampled(
-                            $gd, $framegd, intval($j/$nx*$width), intval($i/$ny*$height), 0, 0,
-                            intval($width/$nx), intval($height/$ny), imagesx($framegd), imagesy($framegd)
-                        );
-                        imagedestroy($framegd);
+                        if ($framegd = imagecreatefromjpeg($tmp))
+                        {
+                            /* Resample each frame using GD, because ffmpeg wants even frame sizes */
+                            imagecopyresampled(
+                                $gd, $framegd, intval($j/$nx*$width), intval($i/$ny*$height), 0, 0,
+                                intval($width/$nx), intval($height/$ny), imagesx($framegd), imagesy($framegd)
+                            );
+                            imagedestroy($framegd);
+                        }
+                        unlink($tmp);
                     }
-                    unlink($tmp);
+                    else
+                        wfDebug("FLVHandler: Failed running $cmd, output file does not exist. Output was:\n$err");
                 }
             }
             imagejpeg($gd, $dstPath);
