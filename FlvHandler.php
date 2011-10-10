@@ -46,3 +46,7 @@ if (empty($wgFLVConverterPath)) $wgFLVConverterPath = '';
 // Minimum size for the flash player (width,height). Used to make sure the
 // controls don't get all squashed up on really small .flv movies.
 if (empty($wgMinFLVSize)) $wgMinFLVSize = array(180, 180);
+
+// Add file extensions
+$wgFileExtensions[] = 'flv';
+$wgFileExtensions[] = 'mp4';
