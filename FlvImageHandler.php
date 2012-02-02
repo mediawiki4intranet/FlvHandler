@@ -15,9 +15,9 @@
  */
 class FlvThumbnailImage extends ThumbnailImage
 {
-    function FlvThumbnailImage($file, $url, $width, $height, $path = false, $page = false)
+    function __construct($file, $url, $width, $height, $path = false, $page = false)
     {
-        $this->ThumbnailImage($file, $url, $width, $height, $path, $page);
+        parent::__construct($file, $url, $width, $height, $path, $page);
     }
     function toHtml($options = array())
     {
