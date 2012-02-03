@@ -246,7 +246,7 @@ class FlvImageHandler extends ImageHandler
                     $wgLang->formatNum($width),
                     $wgLang->formatNum($height)) . $err;
             }
-            if (file_exists($dst) && ($gd = imagecreatefromjpeg($dstPath)))
+            if (file_exists($dstPath) && ($gd = imagecreatefromjpeg($dstPath)))
             {
                 /* Resample the frame */
                 $gd1 = imagecreatetruecolor($width, $height);
