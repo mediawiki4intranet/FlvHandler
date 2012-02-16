@@ -23,7 +23,7 @@ class FlvThumbnailImage extends ThumbnailImage
     {
         global $wgScriptPath;
         $html = parent::toHtml($options);
-        $html = str_replace('</a>', '<br /><div style="background-image:url('.$wgScriptPath.'/extensions/FlvHandler/film6x10.gif); background-repeat:repeat-x; width:'.$this->width.'px; height: 10px"></div></a>', $html);
+        $html = str_replace('</a>', '<div style="margin:0 auto; background-image:url('.$wgScriptPath.'/extensions/FlvHandler/film6x10.gif); background-repeat:repeat-x; width:'.$this->width.'px; height: 10px"></div></a>', $html);
         return $html;
     }
 }
