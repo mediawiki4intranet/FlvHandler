@@ -305,7 +305,7 @@ class FlvImageHandler extends ImageHandler
         return '';
     }
 
-    function getThumbType($ext, $mime)
+    function getThumbType($ext, $mime, $params = NULL)
     {
         return array('jpg', 'image/jpeg');
     }
