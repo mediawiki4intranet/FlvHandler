@@ -47,6 +47,9 @@ if (empty($wgFLVConverterPath)) $wgFLVConverterPath = '';
 // controls don't get all squashed up on really small .flv movies.
 if (empty($wgMinFLVSize)) $wgMinFLVSize = array(180, 180);
 
+// Path to flowplayer swf
+$wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.1.3.swf';
+
 // Add file extensions
 $wgFileExtensions[] = 'flv';
 $wgFileExtensions[] = 'mp4';
