@@ -210,7 +210,7 @@ class FlvImageHandler extends ImageHandler
 
     function makeFFmpegThumbnail($srcPath, $dstPath, $width, $height)
     {
-        global $wgFLVConverterPath, $wgMinFLVSize;
+        global $wgFLVConverterPath, $wgMinFLVSize, $wgLang;
         wfProfileIn(__METHOD__);
         /* Frame count to be extracted onto thumbnail image:
            4 for big thumbnails, 1 for small thumbnails */
@@ -227,7 +227,7 @@ class FlvImageHandler extends ImageHandler
             wfDebug("No Duration: ... found in:\n$probe\n");
             return wfMsgExt('flv-error-full-info', 'parseinline',
                 $wgLang->formatNum($width),
-                $wgLang->formatNum($height)) . $err;
+                $wgLang->formatNum($height));
         }
         $duration = $m[1]*3600 + $m[2]*60 + $m[3] + $m[4]/100;
         if ($ny < 2 && $nx < 2)
