@@ -198,8 +198,6 @@ class FlvImageHandler extends ImageHandler
             return new MediaTransformError('thumbnail_error', $width, $height,
                 wfMsg('thumbnail_dest_directory'));
 
-        wfLoadExtensionMessages('FlvHandler');
-
         $err = $this->makeFFmpegThumbnail($srcPath, $dstPath, $width, $height);
 
         if ($err != '')
@@ -310,7 +308,6 @@ class FlvImageHandler extends ImageHandler
     function getLongDesc($file)
     {
         global $wgLang;
-        wfLoadExtensionMessages('FlvHandler');
         return wfMsgExt('flv-long-desc', 'parseinline',
             $wgLang->formatNum($file->getWidth()),
             $wgLang->formatNum($file->getHeight()),
