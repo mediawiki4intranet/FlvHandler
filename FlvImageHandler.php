@@ -228,6 +228,7 @@ class FlvImageHandler extends ImageHandler
                 $wgLang->formatNum($height));
         }
         $duration = $m[1]*3600 + $m[2]*60 + $m[3] + $m[4]/100;
+        $err = '';
         if ($ny < 2 && $nx < 2)
         {
             /* Extract one frame */
