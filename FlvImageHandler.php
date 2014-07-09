@@ -105,9 +105,10 @@ class FlvPlayCode extends MediaTransformOutput
 $prefix<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="$w" height="$h">
     <param name="movie" value="$wgFlowPlayer" />
     <param name="allowfullscreen" value="true" />
+    <param name="allowscriptaccess" value="always" />
     <param name="flashvars" value='$strConfig' />
     <embed type="application/x-shockwave-flash" width="$w" height="$h"
-        allowfullscreen="true"
+        allowfullscreen="true" allowscriptaccess="always"
         src="$wgFlowPlayer"
         flashvars='$strConfig' />
 </object>$postfix

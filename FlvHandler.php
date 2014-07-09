@@ -48,7 +48,7 @@ if (empty($wgFLVConverterPath)) $wgFLVConverterPath = '';
 if (empty($wgMinFLVSize)) $wgMinFLVSize = array(180, 180);
 
 // Path to flowplayer swf
-$wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.1.3.swf';
+$wgFlowPlayer = 'extensions/FlvHandler/flowplayer/flowplayer-3.2.18.swf';
 
 // Add file extensions
 $wgFileExtensions[] = 'flv';
