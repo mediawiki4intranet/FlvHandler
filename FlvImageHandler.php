@@ -181,7 +181,7 @@ class FlvImageHandler extends ImageHandler
 
         $width = $params['physicalWidth'];
         $height = $params['physicalHeight'];
-        $srcPath = $image->getPath();
+        $srcPath = $image->getLocalRefPath();
 
         $class = 'FlvPlayCode';
         /* makeflvthumbnail=true is used by FlvPlayCode::toHtml() */
